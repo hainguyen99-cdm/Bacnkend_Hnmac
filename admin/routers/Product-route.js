@@ -5,7 +5,7 @@ const ProductController = require('../controllers/Products-Controller')
 const verifyToken= require('../../middleware/auth')
 
 
-router.post('/add',ProductController.createProduct)
+router.post('/create',ProductController.createProduct)
 router.post('/update',ProductController.updateProduct)
 router.post('/addcategories',ProductController.addProductToCategory)
 

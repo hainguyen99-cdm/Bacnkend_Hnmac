@@ -18,16 +18,6 @@ let categoryService = {
           for (let i = 0; i < product.length; i++) {
             const subcategoriesId = await SubCategories.findOne({ _id: subcategories[i] })
             if (!subcategoriesId) return reject(new Error(" subcategory khong ton tai"))
-            for (let j = 0; j < subcategories.length; j++) {
-              let productId = await Product.findOne({ _id: product[j] })
-              if (!productId) return reject(new Error(" product khong ton tai"))
-              if (subcategoriesId.product.includes(product[j])) {
-                await SubCategories.updateMany(
-                  { _id: subcategories[i] },
-                  { $push: { subcategory: product[j] } }
-                );
-              }
-            }
           }
         }
         const response = await Categories({
@@ -48,13 +38,15 @@ let categoryService = {
         const idCategory = req.body.idCategory
         const name = req.body.name
         const subcategories = req.body.subcategory
-        const product = req.body.product
-        await Categories.findOne({ _id: idCategory })
+       const category= await Categories.findOne({ _id: idCategory })
         if (!idCategory) {
           return reject(new Error("Id category khong dung"))
         }
+        if(!category) {
+          return reject(new Error("Id category khong dung"))
+        }
         if (subcategories != null) {
-          for (let i = 0; i < product.length; i++) {
+          for (let i = 0; i < subcategories.length; i++) {
             const subcategoriesId = await SubCategories.findOne({ _id: subcategories[i] })
             if (!subcategoriesId) return reject(new Error(" subcategory khong ton tai"))
           }
@@ -64,8 +56,6 @@ let categoryService = {
         if (name) update.name = name
         if(subcategories) update.subcategory =subcategories
         const response = await Categories.findOneAndUpdate({ _id: idCategory }, update, { new: true })
-
-
         resolve(response)
       } catch (e) {
         console.log(e)
@@ -98,9 +88,11 @@ let categoryService = {
           .sort({ createdAt: -1 })
           .populate({
             path: 'subcategory',
+            model: 'SubCategories', // Should be "model" instead of "models"
             populate: {
               path: 'product',
-              // Select the fields you want to retrieve
+              model: 'Product', // Should be "model" instead of "models"
+              
             },
           })
           .exec();
@@ -114,12 +106,20 @@ let categoryService = {
             updatedAt: category.updatedAt,
             subcategory: category.subcategory.map(sub => {
               return {
-                status: sub.status,
                 _id: sub._id,
                 name: sub.name,
                 createdAt: sub.createdAt,
                 updatedAt: sub.updatedAt,
-                products: sub.product, // Include the products
+                products: sub.product.map(product=>{
+                  return{
+                    _id: product._id,
+                    name: product.name,
+                    avartar:product.avartar,
+                    img: product.img,
+                    groupOption: product.groupOption,
+                    description: product.description
+                  }
+                }), // Include the products
               };
             }),
           };

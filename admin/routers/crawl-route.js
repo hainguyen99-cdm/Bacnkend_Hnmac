@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const {ResponseData} = require('../../helpers/response-data')
-const crawlController = require('../controllers/crawlController')
+const crawlController = require('../controllers/CrawlController')
 
 
 router.get('/',crawlController.crawl)

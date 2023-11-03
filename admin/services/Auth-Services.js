@@ -21,7 +21,7 @@ let AuthService = {
                 if (user) return reject(new Error("Ten dang nhap da ton tai"))
                 const passWord = req.body.passWord
                 const name = req.body.name
-                const role = ROLE.ADMIN
+                // const role = ROLE.ADMIN
                 const passwordHash = await createPasswod(passWord)
                 await User({
                     userName: userName,
@@ -39,7 +39,6 @@ let AuthService = {
     LoginUser: async function (req) {
         return new Promise(async function (resolve, reject) {
             try {
-
                 const userName = req.body.userName
                 const passWord = req.body.passWord
                 let user = await getUser(userName)
@@ -53,9 +52,8 @@ let AuthService = {
                 if (!isPassWordValid) {
                     return res.status(401).json(new ResponseData(false, "Password incorrect",).toJson())
                 }
-                const tokens = generateTokens(userName)
-                // updateRefreshToken(userName, tokens.refreshToken)
-
+                const id =user._id.toString()
+                const tokens = generateTokens({id,userName})
                 const response = await User.findOneAndUpdate({ userName: userName }, { refreshToken: tokens.refreshToken })
                 let userInfo = await User.findOne({ _id: user._id }, { passWord: 0, __v: 0, createdAt: 0, updatedAt: 0, refreshToken: 0 })
                 return resolve({ userInfo, tokens })
@@ -82,11 +80,10 @@ let AuthService = {
             try {
                 const refreshToken = req.body.refreshToken
                 if (!refreshToken) reject(false)
-
                 const user = await User.findOne({ refreshToken: refreshToken })
                 if (!user) reject(false)
                 jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
-                const tokens = generateTokens(user)
+                const tokens = generateTokens(user._id,user.userName)
                 const response = await User.findOneAndUpdate({ userName: user.userName }, { refreshToken: tokens.refreshToken })
                 return resolve(tokens)
             } catch (e) {
@@ -127,10 +124,10 @@ async function createPasswod(passWord) {
         }
     })
 }
-const generateTokens = payload => {
+function  generateTokens (payload) {
     const { id, username } = payload
-
     // Create JWT
+
     const accessToken = jwt.sign(
         { id, username },
         process.env.ACCESS_TOKEN_SECRET,

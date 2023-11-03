@@ -7,6 +7,7 @@ const app = express();
 const cors = require('cors')
 const  port  = process.env.PORT||3000
 
+
 require('./config/init-mongodb')
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(bodyParser.urlencoded({ extended: true }))

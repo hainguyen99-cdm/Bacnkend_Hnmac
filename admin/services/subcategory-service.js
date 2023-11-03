@@ -48,14 +48,21 @@ let subcategoryService = {
       try {
         const idSubCategory = req.body.idSubCategory
         const name = req.body.name
-        const product = req.body.product
+        const productId = req.body.product
         const SubCategory= await SubCategories.findOne({_id: idSubCategory})
         if (!SubCategory) {
           return reject(new Error("Id subcategory khong dung"))
         }
+        
+        for(let i=0;i<productId.length;i++){
+          let product = await Product.findOne({
+            _id: productId[i]
+          })
+          if(!product)   return reject(new Error("Id Product khong ton tai"))
+        }
         let update = {}
         if (name) update.name = name
-        if(product) update.product=product
+        if(productId) update.product=productId
         const response = await SubCategories.findOneAndUpdate({_id: idSubCategory}, update,{ new: true})
         resolve(response)
       } catch (e) {
@@ -75,6 +82,9 @@ let subcategoryService = {
           if (!subCategory) {
             throw new Error("Không tìm thấy danh mục");
           }
+          await Categories.updateMany( 
+            { subcategory: idSubCategory }, 
+            { $pull: { subcategory: idSubCategory } },)     
           resolve(subCategory);
         } catch (e) {
           console.error(e);
@@ -105,15 +115,15 @@ let subcategoryService = {
     });
     
   },
-  addSubCategoryToCategory: async function(req) {
+  addProductToSubCategory: async function(req) {
     return new Promise(async function(resolve, reject) {
       try {  
-        const categoryId = req.body.categoryId
+        const subCategoryId = req.body.categoryId
         const productId = req.body.productId
-        console.log(categoryId.length)
-      for(let i=0;i<categoryId.length;i++){
-            await Categories.updateMany(
-            { _id: categoryId[i] },
+
+      for(let i=0;i<subCategoryId.length;i++){
+            await SubCategories.updateMany(
+            { _id: subCategoryId[i] },
             { $push: { products: productId} }
           );
       }      

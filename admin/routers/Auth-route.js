@@ -3,11 +3,12 @@ const router = express.Router()
 const {ResponseData} = require('../../helpers/response-data')
 const AuthController = require('../controllers/Auth-Controller')
 const verifyToken= require('../../middleware/auth')
+const middleware = require('./../../middleware/auth')
 
 
 router.post('/register',AuthController.registerUser)
 router.post('/login',AuthController.LoginUser)
-router.post('/token',AuthController.TokenUser)
+router.post('/token',middleware,AuthController.TokenUser)
 
 router.delete('/logout',verifyToken,AuthController.LogoutUser)
 

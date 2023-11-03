@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken')
 
 const verifyToken = (req, res, next)=>{
+
+
     const authHeader = req.header('Authorization')
     const token = authHeader && authHeader
-
-
     if(!token) return res.sendStatus(401)
 
     try {
